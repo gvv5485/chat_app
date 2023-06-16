@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot Web App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .message .role {
+            min-width: 70px;
+            padding: 6px 12px;
+            font-weight: bold;
+            text-align: center;
+            color: #fff;
+            border-radius: 20px;
+        }
+
+        .message .user {
+            background-color: #007bff;
+        }
+
+        .message .chatbot {
+            background-color: #28a745;
+        }
+
+        .input-container {
+            display: flex;
+            margin-top: 20px;
+        }
+
+        .input-container input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .input-container button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chatbot Web App</h1>
+        <div id="chat-container"></div>
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Enter your message">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var chatContainer = $('#chat-container');
+            var userInput = $('#user-input');
+            var sendButton = $('#send-button');
+
+            // Function to add a message to the chat container
+            function addMessage(role, content) {
+                var messageClass = 'message-' + role;
+                var messageElement = $('<div class="message">');
+                var roleElement = $('<div class="role">').addClass(role).text(role.charAt(0).toUpperCase());
+                var contentElement = $('<div>').text(content);
+                messageElement.append(roleElement, contentElement);
+                chatContainer.append(messageElement);
+                chatContainer.scrollTop(chatContainer.prop('scrollHeight'));
+            }
+
+            // Function to handle user input
+            function handleUserInput() {
+                var userMessage = userInput.val().trim();
+                if (userMessage !== '') {
+                    addMessage('user', userMessage);
+
+                    // Send user input to the server
+                    $.ajax({
+                        type: 'POST',
+                        url: '/get_response',
+                        data: { user_input: userMessage },
+                        success: function(response) {
+                            var chatbotResponse = response.response;
+                            addMessage('chatbot', chatbotResponse);
+                            userInput.val('');
+                        }
+                    });
+                }
+            }
+
+            // Event handlers
+            userInput.on('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    handleUserInput();
+                }
+            });
+
+            sendButton.on('click', function() {
+                handleUserInput();
+            });
+        });
+    </script>
+</body>
+</html>
